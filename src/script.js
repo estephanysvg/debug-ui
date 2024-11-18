@@ -7,9 +7,11 @@ import GUI from 'lil-gui'
  * Debug
  */
 
-const gui = new GUI()
+const gui = new GUI({width: 300, title: 'Nice debug UI!'})
 
 const debugObject = {}
+
+console.log(debugObject);
 /**
  * Base
  */
@@ -29,12 +31,29 @@ const material = new THREE.MeshBasicMaterial({ color: debugObject.color, wirefra
 const mesh = new THREE.Mesh(geometry, material)
 scene.add(mesh)
 
-gui.add(mesh.position, 'y').min(-3).max(3).step(0.01).name('elevation')
+// Ordenar los controles del cubo
+const cubeTweaks = gui.addFolder('Awesome cube')
 
-gui.add(mesh, 'visible').name('visible')
+//Cerrar ese control específico
+// cubeTweaks.close()
 
-gui.add(material, 'wireframe')
-gui.addColor(debugObject, 'color').onChange(
+// gui.hide()
+
+window.addEventListener('keydown', (event) => {
+    if (event.key == 'h') {
+        // Toggle de show y hide
+        gui.show(gui._hidden)
+    }
+})
+
+console.log(mesh)
+
+cubeTweaks.add(mesh.position, 'y').min(-3).max(3).step(0.01).name('elevation')
+
+cubeTweaks.add(mesh, 'visible').name('visible')
+
+cubeTweaks.add(material, 'wireframe')
+cubeTweaks.addColor(debugObject, 'color').onChange(
     () => {
         material.color.set(debugObject.color)
     }
@@ -43,17 +62,25 @@ gui.addColor(debugObject, 'color').onChange(
 debugObject.spin = () => {
     gsap.to(mesh.rotation, {
         x: mesh.rotation.y + Math.PI * 4,
-        delay: 3,
         yoyo: true,
         repeat: -1,
         duration: 8
-         })
+    })
 }
 
-gui.add(debugObject, 'spin')
+cubeTweaks.add(debugObject, 'spin')
 
-console.log(geometry);
-debugObject.subdivisi
+debugObject.subdivision = 2
+
+// onFinishChange ocurre cuando haces drop de la barra (con onChange sucede cada vez que cambia, es decir, pasaría por todos los valores).
+cubeTweaks.add(debugObject, 'subdivision').min(1).max(20).step(1).onFinishChange(() => {
+    console.log('changed');
+    mesh.geometry = new THREE.BoxGeometry(
+        1, 1, 1,
+        debugObject.subdivision, debugObject.subdivision, debugObject.subdivision
+    )
+})
+
 
 /**
  * Sizes
